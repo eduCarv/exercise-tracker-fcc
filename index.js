@@ -24,6 +24,18 @@ function geraHash(username) {
   return id;
 }
 
+function getUsernameById(userId){
+  const dados = arrDados.filter(obj => obj._id == userId);
+
+  return dados;
+}
+
+function getExercisesById(userId) {
+  const dados = arrExercicios.filter(obj => obj._id == userId);
+
+  return dados;
+}
+
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html')
 });
@@ -56,8 +68,9 @@ app.post('/api/users/:_id/exercises', (req, res) => {
   const duration = Number(req.body.duration);
   const date = (req.body.date) ? new Date(req.body.date).toDateString() : (new Date()).toDateString();
 
-  const filtroDados = arrDados.filter(obj => obj._id == idCadastro);
-  let filtroExercicios = arrExercicios.filter(obj => obj._id == idCadastro);
+  let filtroDados = getUsernameById(idCadastro);
+  
+  let filtroExercicios = getExercisesById(idCadastro);
 
   // console.log('filtroExercicios', filtroExercicios);
 
@@ -69,7 +82,7 @@ app.post('/api/users/:_id/exercises', (req, res) => {
     });
   } else {
     arrExercicios.push({ _id: idCadastro, exercises: [] });
-    filtroExercicios = arrExercicios.filter(obj => obj._id == idCadastro);
+    filtroExercicios = getExercisesById(idCadastro);
 
     filtroExercicios[0].exercises.push({
       description: desc,
@@ -77,9 +90,7 @@ app.post('/api/users/:_id/exercises', (req, res) => {
       date: date,
     });
     // console.log('filtroExercicios2',filtroExercicios);
-  }
-
-  filtroExercicios = arrExercicios.filter(obj => obj._id == idCadastro);
+  }  
 
   const obj = {
     _id: idCadastro,
@@ -101,26 +112,19 @@ app.get('/api/users/:_id/logs', (req, res) => {
   const {from, to, limit} = req.query;
   
   
-  const filtroDados = arrDados.filter(obj => obj._id == idCadastro);
-  let filtroLog = arrExercicios.filter(obj => obj._id == idCadastro);  
+  let filtroDados = getUsernameById(idCadastro);
+  let filtroLog = getExercisesById(idCadastro);     
+  
   filtroLog = filtroLog[0].exercises;
   
   if (from) {
-    const fromDate = new Date(from);
-    console.log('filtroLog', filtroLog);    
-    
+    const fromDate = new Date(from);    
     filtroLog = filtroLog.filter(exe => new Date(exe.date) > fromDate);
-    console.log('from', fromDate);
-    console.log('filtroLog', filtroLog);    
   }
 
   if (to) {
-    const toDate = new Date(to);
-    console.log('filtroLog', filtroLog);    
-    
+    const toDate = new Date(to);    
     filtroLog = filtroLog.filter(exe => new Date(exe.date) < toDate);
-    console.log('to', toDate);
-    console.log('filtroLog', filtroLog);    
   }
 
   if (limit) {
