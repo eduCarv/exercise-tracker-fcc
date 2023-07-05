@@ -53,10 +53,10 @@ app.get('/api/users', (req, res) => {
 app.post('/api/users/:_id/exercises', (req, res) => {
   const idCadastro = req.params._id;
   const desc = req.body.description;
-  const duration = req.body.duration;
-  const date = (req.body.date) ? new Date(req.body.date).toDateString() :  (new Date()).toDateString();
+  const duration = Number(req.body.duration);
+  const date = (req.body.date) ? new Date(req.body.date).toDateString() : (new Date()).toDateString();
 
-  const filtroDados = arrDados.filter(obj => obj._id == idCadastro);  
+  const filtroDados = arrDados.filter(obj => obj._id == idCadastro);
   let filtroExercicios = arrExercicios.filter(obj => obj._id == idCadastro);
 
   // console.log('filtroExercicios', filtroExercicios);
@@ -66,26 +66,26 @@ app.post('/api/users/:_id/exercises', (req, res) => {
       description: desc,
       duration: duration,
       date: date,
-    });    
+    });
   } else {
-    arrExercicios.push({_id: idCadastro, exercises: []});    
+    arrExercicios.push({ _id: idCadastro, exercises: [] });
     filtroExercicios = arrExercicios.filter(obj => obj._id == idCadastro);
 
     filtroExercicios[0].exercises.push({
       description: desc,
       duration: duration,
       date: date,
-    });        
+    });
     // console.log('filtroExercicios2',filtroExercicios);
   }
 
   filtroExercicios = arrExercicios.filter(obj => obj._id == idCadastro);
 
-  const obj =  {
+  const obj = {
     _id: idCadastro,
     username: filtroDados[0].username,
     description: desc,
-    duration: Number(duration),
+    duration: duration,
     date: date
   };
 
@@ -93,6 +93,52 @@ app.post('/api/users/:_id/exercises', (req, res) => {
   res.json(obj);
 
 });
+
+//Exibe exercício especifico
+app.get('/api/users/:_id/logs', (req, res) => {
+  const idCadastro = req.params._id;
+
+  const {from, to, limit} = req.query;
+  
+  
+  const filtroDados = arrDados.filter(obj => obj._id == idCadastro);
+  let filtroLog = arrExercicios.filter(obj => obj._id == idCadastro);  
+  filtroLog = filtroLog[0].exercises;
+  
+  if (from) {
+    const fromDate = new Date(from);
+    console.log('filtroLog', filtroLog);    
+    
+    filtroLog = filtroLog.filter(exe => new Date(exe.date) > fromDate);
+    console.log('from', fromDate);
+    console.log('filtroLog', filtroLog);    
+  }
+
+  if (to) {
+    const toDate = new Date(to);
+    console.log('filtroLog', filtroLog);    
+    
+    filtroLog = filtroLog.filter(exe => new Date(exe.date) < toDate);
+    console.log('to', toDate);
+    console.log('filtroLog', filtroLog);    
+  }
+
+  if (limit) {
+    filtroLog = filtroLog.slice(0, limit);
+  }
+ 
+  const log = {
+    username: filtroDados[0].username,
+    count: Number(filtroLog.length),
+    _id: idCadastro,
+    log: filtroLog
+  };
+
+  console.log('log', log);  
+  
+  res.json(log);
+});
+
 
 
 
